@@ -1,0 +1,11 @@
+{
+  "domain": "esphome_backup",
+  "name": "ESPHome Backup",
+  "version": "0.1.0",
+  "documentation": "https://github.com/willkpalmer/hass_esphomebackup",
+  "issue_tracker": "https://github.com/willkpalmer/hass_esphomebackup/issues",
+  "codeowners": ["@willkpalmer"],
+  "config_flow": true,
+  "iot_class": "calculated",
+  "requirements": []
+}

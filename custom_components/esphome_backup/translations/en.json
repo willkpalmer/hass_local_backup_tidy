@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ESPHome Backup",
+        "description": "Configure when to back up the esphome config directory and how many backups to retain.",
+        "data": {
+          "times": "Backup times (comma-separated 24h HH:MM, one per run per day)",
+          "retain": "Number of backups to retain"
+        }
+      }
+    },
+    "error": {
+      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00)."
+    },
+    "abort": {
+      "already_configured": "ESPHome Backup is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ESPHome Backup Options",
+        "data": {
+          "times": "Backup times (comma-separated 24h HH:MM, one per run per day)",
+          "retain": "Number of backups to retain"
+        }
+      }
+    },
+    "error": {
+      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00)."
+    }
+  }
+}
