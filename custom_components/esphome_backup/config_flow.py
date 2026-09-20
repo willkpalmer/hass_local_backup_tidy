@@ -13,8 +13,24 @@ from homeassistant.helpers.selector import (
     TextSelector,
 )
 
-from .const import CONF_RETAIN, CONF_TIMES, DEFAULT_RETAIN, DEFAULT_TIMES, DOMAIN
-from .util import validate_times
+from .const import (
+    CONF_INCREMENTAL_TIMES,
+    CONF_RETAIN,
+    CONF_TIMES,
+    DEFAULT_INCREMENTAL_TIMES,
+    DEFAULT_RETAIN,
+    DEFAULT_TIMES,
+    DOMAIN,
+)
+from .util import parse_times, validate_optional_times, validate_times
+
+
+class _InvalidInput(Exception):
+    """Raised with the specific translation key to show for the error."""
+
+    def __init__(self, error_key: str) -> None:
+        super().__init__(error_key)
+        self.error_key = error_key
 
 
 def _schema(defaults: dict[str, Any]) -> vol.Schema:
@@ -22,6 +38,12 @@ def _schema(defaults: dict[str, Any]) -> vol.Schema:
         {
             vol.Required(
                 CONF_TIMES, default=defaults.get(CONF_TIMES, ",".join(DEFAULT_TIMES))
+            ): TextSelector(),
+            vol.Optional(
+                CONF_INCREMENTAL_TIMES,
+                default=defaults.get(
+                    CONF_INCREMENTAL_TIMES, ",".join(DEFAULT_INCREMENTAL_TIMES)
+                ),
             ): TextSelector(),
             vol.Required(
                 CONF_RETAIN, default=defaults.get(CONF_RETAIN, DEFAULT_RETAIN)
@@ -33,13 +55,25 @@ def _schema(defaults: dict[str, Any]) -> vol.Schema:
 
 
 def _validate_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
-    """Validate input, returning it normalized. Raises vol.Invalid on bad times."""
+    """Validate input, returning it normalized. Raises _InvalidInput on bad input."""
     try:
         times = validate_times(user_input[CONF_TIMES])
     except ValueError as err:
-        raise vol.Invalid(str(err)) from err
+        raise _InvalidInput("invalid_times") from err
+
+    try:
+        incremental_times = validate_optional_times(
+            user_input.get(CONF_INCREMENTAL_TIMES, "")
+        )
+    except ValueError as err:
+        raise _InvalidInput("invalid_incremental_times") from err
+
+    if set(parse_times(times)) & set(parse_times(incremental_times)):
+        raise _InvalidInput("overlapping_times")
+
     return {
         CONF_TIMES: times,
+        CONF_INCREMENTAL_TIMES: incremental_times,
         CONF_RETAIN: int(user_input[CONF_RETAIN]),
     }
 
@@ -60,8 +94,8 @@ class EsphomeBackupConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 data = _validate_user_input(user_input)
-            except vol.Invalid as err:
-                errors["base"] = "invalid_times"
+            except _InvalidInput as err:
+                errors["base"] = err.error_key
             else:
                 return self.async_create_entry(title="ESPHome Backup", data=data)
 
@@ -89,8 +123,8 @@ class EsphomeBackupOptionsFlow(OptionsFlow):
         if user_input is not None:
             try:
                 data = _validate_user_input(user_input)
-            except vol.Invalid:
-                errors["base"] = "invalid_times"
+            except _InvalidInput as err:
+                errors["base"] = err.error_key
             else:
                 return self.async_create_entry(title="", data=data)
 

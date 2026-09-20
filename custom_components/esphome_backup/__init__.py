@@ -9,7 +9,16 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.event import async_track_time_change
 
 from .backup import EsphomeDirNotFound, async_do_backup
-from .const import CONF_RETAIN, CONF_TIMES, DEFAULT_RETAIN, DEFAULT_TIMES, DOMAIN, SERVICE_BACKUP_NOW
+from .const import (
+    CONF_INCREMENTAL_TIMES,
+    CONF_RETAIN,
+    CONF_TIMES,
+    DEFAULT_INCREMENTAL_TIMES,
+    DEFAULT_RETAIN,
+    DEFAULT_TIMES,
+    DOMAIN,
+    SERVICE_BACKUP_NOW,
+)
 from .util import parse_times
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,27 +30,40 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up ESPHome Backup from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    async def _run_backup(_now=None) -> None:
-        options = {**entry.data, **entry.options}
-        retain = int(options.get(CONF_RETAIN, DEFAULT_RETAIN))
-        try:
-            dest = await async_do_backup(hass, retain)
-        except EsphomeDirNotFound as err:
-            _LOGGER.warning("ESPHome backup skipped: %s", err)
-            return
-        _LOGGER.info("Created ESPHome backup at %s", dest)
+    def _make_run_backup(incremental: bool):
+        async def _run_backup(_now=None) -> None:
+            options = {**entry.data, **entry.options}
+            retain = int(options.get(CONF_RETAIN, DEFAULT_RETAIN))
+            try:
+                dest = await async_do_backup(hass, retain, incremental=incremental)
+            except EsphomeDirNotFound as err:
+                _LOGGER.warning("ESPHome backup skipped: %s", err)
+                return
+            kind = "incremental" if incremental else "full"
+            _LOGGER.info("Created %s ESPHome backup at %s", kind, dest)
+
+        return _run_backup
+
+    run_full_backup = _make_run_backup(incremental=False)
+    run_incremental_backup = _make_run_backup(incremental=True)
 
     options = {**entry.data, **entry.options}
     times = parse_times(options.get(CONF_TIMES, ",".join(DEFAULT_TIMES)))
+    incremental_times = parse_times(
+        options.get(CONF_INCREMENTAL_TIMES, ",".join(DEFAULT_INCREMENTAL_TIMES))
+    )
 
     unsubs = []
-    for time_str in times:
+    for time_str, handler in [(t, run_full_backup) for t in times] + [
+        (t, run_incremental_backup) for t in incremental_times
+    ]:
         hour, minute = (int(part) for part in time_str.split(":"))
         unsubs.append(
-            async_track_time_change(hass, _run_backup, hour=hour, minute=minute, second=0)
+            async_track_time_change(hass, handler, hour=hour, minute=minute, second=0)
         )
 
-    hass.data[DOMAIN][entry.entry_id] = {"unsubs": unsubs, "run_backup": _run_backup}
+    # Manual triggers (service/button) always do a full backup, for predictability.
+    hass.data[DOMAIN][entry.entry_id] = {"unsubs": unsubs, "run_backup": run_full_backup}
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 

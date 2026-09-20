@@ -5,13 +5,16 @@
         "title": "ESPHome Backup",
         "description": "Configure when to back up the esphome config directory and how many backups to retain.",
         "data": {
-          "times": "Backup times (comma-separated 24h HH:MM, one per run per day)",
-          "retain": "Number of backups to retain"
+          "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
+          "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
+          "retain": "Number of backups to retain (full and incremental combined)"
         }
       }
     },
     "error": {
-      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00)."
+      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00).",
+      "invalid_incremental_times": "Enter valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00), or leave blank.",
+      "overlapping_times": "Full backup times and incremental backup times can't share the same time."
     },
     "abort": {
       "already_configured": "ESPHome Backup is already configured."
@@ -22,13 +25,16 @@
       "init": {
         "title": "ESPHome Backup Options",
         "data": {
-          "times": "Backup times (comma-separated 24h HH:MM, one per run per day)",
-          "retain": "Number of backups to retain"
+          "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
+          "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
+          "retain": "Number of backups to retain (full and incremental combined)"
         }
       }
     },
     "error": {
-      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00)."
+      "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00).",
+      "invalid_incremental_times": "Enter valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00), or leave blank.",
+      "overlapping_times": "Full backup times and incremental backup times can't share the same time."
     }
   },
   "entity": {

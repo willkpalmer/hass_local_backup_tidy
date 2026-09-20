@@ -3,9 +3,11 @@
 DOMAIN = "esphome_backup"
 
 CONF_TIMES = "times"
+CONF_INCREMENTAL_TIMES = "incremental_times"
 CONF_RETAIN = "retain"
 
 DEFAULT_TIMES = ["02:00"]
+DEFAULT_INCREMENTAL_TIMES: list[str] = []
 DEFAULT_RETAIN = 7
 
 ESPHOME_DIR_NAME = "esphome"

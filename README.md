@@ -10,11 +10,22 @@ A Home Assistant custom integration that periodically backs up your
 
 - On each configured run, copies `config/esphome` to
   `config/esphome_backup/yyyy-mm-dd_hhmmss`.
-- After creating the backup, deletes the oldest backups in
-  `config/esphome_backup/` until only the configured number remain.
+- Supports two kinds of scheduled run, each with its own list of times:
+  - **Full** — a plain, independent copy of every file.
+  - **Incremental** — a copy where any file identical to the one in the
+    previous backup is hardlinked instead of copied. The resulting folder
+    still looks like a complete, independently-restorable snapshot, it just
+    uses far less disk space when little has changed. Pruning an old backup
+    is always safe even if newer backups link to its files — deleting a
+    folder just drops its links, and a file's data isn't freed until every
+    backup referencing it is gone.
+- After creating a backup (full or incremental), deletes the oldest backups
+  in `config/esphome_backup/` until only the configured number remain — full
+  and incremental backups share one combined retention count.
 - Fully configured through the Home Assistant UI (no YAML).
 - Adds a **Backup now** button entity, and exposes a matching
-  `esphome_backup.backup_now` service, to trigger a backup on demand.
+  `esphome_backup.backup_now` service, to trigger a backup on demand (always
+  a full backup, for predictability).
 
 ## Installation
 
@@ -36,13 +47,16 @@ A Home Assistant custom integration that periodically backs up your
 1. Go to **Settings → Devices & Services → Add Integration**, search for
    **ESPHome Backup**.
 2. Set:
-   - **Backup times** — one or more 24h `HH:MM` times, comma-separated
-     (e.g. `02:00` or `02:00,14:00`). A backup runs at each listed time,
-     every day — so the number of times you list is the number of backups
-     per day.
+   - **Full backup times** — one or more 24h `HH:MM` times, comma-separated
+     (e.g. `02:00` or `02:00,14:00`). A full backup runs at each listed
+     time, every day.
+   - **Incremental backup times** — same format, optional. An incremental
+     backup runs at each of these times; leave blank to disable incremental
+     backups entirely. A time can't appear in both lists.
    - **Number of backups to retain** — how many timestamped folders under
-     `config/esphome_backup/` to keep. Once a new backup is written, the
-     oldest are deleted until the count is back at this number.
+     `config/esphome_backup/` to keep, counting full and incremental backups
+     together. Once a new backup is written, the oldest are deleted until
+     the count is back at this number.
 3. Options can be changed later from the integration's **Configure** button;
    the schedule reloads automatically.
 
@@ -59,8 +73,14 @@ either way, this triggers a backup + prune immediately, outside the schedule.
 
 - If `config/esphome` doesn't exist at run time, that run is skipped and a
   warning is logged — nothing is deleted.
-- Backups are plain directory copies (not archives), so they're easy to
-  inspect or restore by copying a folder back to `esphome`.
+- Backups are plain directories (not archives), so they're easy to inspect
+  or restore by copying a folder back to `esphome` — this holds for
+  incremental backups too, since hardlinked files are indistinguishable
+  from copies when read or restored.
+- If the very first backup ever created is an incremental one (nothing to
+  link against yet), or a hardlink can't be created (e.g. `config` is on a
+  network share that doesn't support them), that run/file falls back to a
+  plain copy automatically.
 
 ## Versioning / updates
 

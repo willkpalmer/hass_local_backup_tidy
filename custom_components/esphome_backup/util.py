@@ -29,3 +29,15 @@ def validate_times(times_str: str) -> str:
             deduped.append(time_str)
 
     return ",".join(deduped)
+
+
+def validate_optional_times(times_str: str) -> str:
+    """Like validate_times, but an empty/blank string means 'no times'."""
+    if not times_str or not times_str.strip():
+        return ""
+    return validate_times(times_str)
+
+
+def times_overlap(times_str_a: str, times_str_b: str) -> bool:
+    """Return True if the two comma-separated time lists share any entry."""
+    return bool(set(parse_times(times_str_a)) & set(parse_times(times_str_b)))
