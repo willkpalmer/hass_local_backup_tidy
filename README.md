@@ -1,5 +1,7 @@
 # ESPHome Backup
 
+<img src="icon.png" alt="ESPHome Backup icon" width="128" height="128">
+
 A Home Assistant custom integration that periodically backs up your
 `config/esphome` directory to timestamped sibling folders, with configurable
 schedule and retention.
@@ -60,3 +62,13 @@ the schedule.
 
 This repo uses semantic versioning in `manifest.json`; each GitHub release
 tag matches the manifest version so HACS can detect and offer updates.
+
+## Icon
+
+`icon.png` / `icon@2x.png` at the repo root are a skeuomorphic mark combining
+an ESPHome-style chip with a classic backup floppy disk; HACS displays this
+in the store listing for the custom repository. To have it also appear on
+Home Assistant's native **Settings → Devices & Services** page, it would
+need to be submitted to the [home-assistant/brands](https://github.com/home-assistant/brands)
+repository — that's a separate, manually-reviewed PR this repo doesn't do
+automatically.
