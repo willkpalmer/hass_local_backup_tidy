@@ -13,7 +13,8 @@ A Home Assistant custom integration that periodically backs up your
 - After creating the backup, deletes the oldest backups in
   `config/esphome_backup/` until only the configured number remain.
 - Fully configured through the Home Assistant UI (no YAML).
-- Exposes a `esphome_backup.backup_now` service to trigger a backup manually.
+- Adds a **Backup now** button entity, and exposes a matching
+  `esphome_backup.backup_now` service, to trigger a backup on demand.
 
 ## Installation
 
@@ -47,9 +48,12 @@ A Home Assistant custom integration that periodically backs up your
 
 ## Manual backup
 
-Call the service `esphome_backup.backup_now` (e.g. from Developer Tools →
-Services, or an automation) to trigger a backup + prune immediately, outside
-the schedule.
+- Press the **Backup now** button entity (created automatically under the
+  ESPHome Backup device), or
+- call the service `esphome_backup.backup_now` (e.g. from Developer Tools →
+  Services, or an automation)
+
+either way, this triggers a backup + prune immediately, outside the schedule.
 
 ## Notes
 
