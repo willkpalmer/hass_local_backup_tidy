@@ -3,15 +3,15 @@
 <img src="icon.png" alt="ESPHome Backup icon" width="128" height="128">
 
 A Home Assistant custom integration that periodically backs up your
-`config/esphome` directory to timestamped sibling folders, with configurable
-schedule and retention.
+`config/esphome` directory into timestamped folders under
+`config/esphome_backup/`, with configurable schedule and retention.
 
 ## What it does
 
 - On each configured run, copies `config/esphome` to
-  `config/esphome_backup_yyyy-mm-dd_hhmmss` (same folder level as `esphome`).
-- After creating the backup, deletes the oldest `esphome_backup_*` folders
-  until only the configured number remain.
+  `config/esphome_backup/yyyy-mm-dd_hhmmss`.
+- After creating the backup, deletes the oldest backups in
+  `config/esphome_backup/` until only the configured number remain.
 - Fully configured through the Home Assistant UI (no YAML).
 - Exposes a `esphome_backup.backup_now` service to trigger a backup manually.
 
@@ -39,9 +39,9 @@ schedule and retention.
      (e.g. `02:00` or `02:00,14:00`). A backup runs at each listed time,
      every day — so the number of times you list is the number of backups
      per day.
-   - **Number of backups to retain** — how many `esphome_backup_*` folders
-     to keep. Once a new backup is written, the oldest are deleted until the
-     count is back at this number.
+   - **Number of backups to retain** — how many timestamped folders under
+     `config/esphome_backup/` to keep. Once a new backup is written, the
+     oldest are deleted until the count is back at this number.
 3. Options can be changed later from the integration's **Configure** button;
    the schedule reloads automatically.
 

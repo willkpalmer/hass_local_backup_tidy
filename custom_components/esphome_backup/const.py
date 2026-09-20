@@ -9,7 +9,7 @@ DEFAULT_TIMES = ["02:00"]
 DEFAULT_RETAIN = 7
 
 ESPHOME_DIR_NAME = "esphome"
-BACKUP_PREFIX = "esphome_backup_"
+BACKUP_DIR_NAME = "esphome_backup"
 BACKUP_TIMESTAMP_FORMAT = "%Y-%m-%d_%H%M%S"
 
 SERVICE_BACKUP_NOW = "backup_now"
