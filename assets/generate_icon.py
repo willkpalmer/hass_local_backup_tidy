@@ -5,6 +5,7 @@ resolution then downsampled for anti-aliasing.
 from __future__ import annotations
 
 import math
+import os
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -282,9 +283,14 @@ def main():
 
     out_512 = img.resize((512, 512), Image.LANCZOS)
     out_256 = img.resize((256, 256), Image.LANCZOS)
-    out_512.save("../icon@2x.png")
-    out_256.save("../icon.png")
-    print("saved icon.png and icon@2x.png to repo root")
+
+    brand_dir = "../custom_components/esphome_backup/brand"
+    os.makedirs(brand_dir, exist_ok=True)
+    for path in ("../icon.png", f"{brand_dir}/icon.png"):
+        out_256.save(path)
+    for path in ("../icon@2x.png", f"{brand_dir}/icon@2x.png"):
+        out_512.save(path)
+    print("saved icon.png / icon@2x.png to repo root and custom_components/esphome_backup/brand/")
 
 
 if __name__ == "__main__":

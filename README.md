@@ -95,8 +95,11 @@ tag matches the manifest version so HACS can detect and offer updates.
 
 `icon.png` / `icon@2x.png` at the repo root are a skeuomorphic mark combining
 an ESPHome-style chip with a classic backup floppy disk; HACS displays this
-in the store listing for the custom repository. To have it also appear on
-Home Assistant's native **Settings → Devices & Services** page, it would
-need to be submitted to the [home-assistant/brands](https://github.com/home-assistant/brands)
-repository — that's a separate, manually-reviewed PR this repo doesn't do
-automatically.
+in the store listing for the custom repository.
+
+The same images are duplicated under
+`custom_components/esphome_backup/brand/` so Home Assistant (2026.3+) shows
+them natively on **Settings → Devices & Services** too, without needing a
+PR to [home-assistant/brands](https://github.com/home-assistant/brands) —
+local brand images take priority over that repository automatically. On
+older Home Assistant versions this page falls back to a generic icon.
