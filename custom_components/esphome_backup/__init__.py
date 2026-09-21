@@ -62,8 +62,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             async_track_time_change(hass, handler, hour=hour, minute=minute, second=0)
         )
 
-    # Manual triggers (service/button) always do a full backup, for predictability.
-    hass.data[DOMAIN][entry.entry_id] = {"unsubs": unsubs, "run_backup": run_full_backup}
+    # The backup_now service always does a full backup, for predictability;
+    # the button platform exposes both full and incremental separately.
+    hass.data[DOMAIN][entry.entry_id] = {
+        "unsubs": unsubs,
+        "run_backup": run_full_backup,
+        "run_incremental_backup": run_incremental_backup,
+    }
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 

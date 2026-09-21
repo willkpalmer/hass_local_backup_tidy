@@ -13,21 +13,49 @@ from .const import DOMAIN
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the backup-now button for a config entry."""
-    async_add_entities([EsphomeBackupNowButton(hass, entry)])
+    """Set up the backup-now buttons for a config entry."""
+    async_add_entities(
+        [
+            EsphomeBackupButton(
+                hass,
+                entry,
+                data_key="run_backup",
+                unique_id_suffix="backup_now",
+                translation_key="backup_now",
+                icon="mdi:backup-restore",
+            ),
+            EsphomeBackupButton(
+                hass,
+                entry,
+                data_key="run_incremental_backup",
+                unique_id_suffix="backup_now_incremental",
+                translation_key="backup_now_incremental",
+                icon="mdi:content-save-plus-outline",
+            ),
+        ]
+    )
 
 
-class EsphomeBackupNowButton(ButtonEntity):
-    """Button that triggers an immediate ESPHome backup."""
+class EsphomeBackupButton(ButtonEntity):
+    """Button that triggers an immediate ESPHome backup (full or incremental)."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "backup_now"
-    _attr_icon = "mdi:backup-restore"
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        data_key: str,
+        unique_id_suffix: str,
+        translation_key: str,
+        icon: str,
+    ) -> None:
         self._hass = hass
         self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_backup_now"
+        self._data_key = data_key
+        self._attr_translation_key = translation_key
+        self._attr_icon = icon
+        self._attr_unique_id = f"{entry.entry_id}_{unique_id_suffix}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="ESPHome Backup",
@@ -37,4 +65,4 @@ class EsphomeBackupNowButton(ButtonEntity):
     async def async_press(self) -> None:
         """Trigger a backup + prune immediately."""
         entry_data = self._hass.data[DOMAIN][self._entry.entry_id]
-        await entry_data["run_backup"]()
+        await entry_data[self._data_key]()

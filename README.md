@@ -23,9 +23,9 @@ A Home Assistant custom integration that periodically backs up your
   in `config/esphome_backup/` until only the configured number remain — full
   and incremental backups share one combined retention count.
 - Fully configured through the Home Assistant UI (no YAML).
-- Adds a **Backup now** button entity, and exposes a matching
-  `esphome_backup.backup_now` service, to trigger a backup on demand (always
-  a full backup, for predictability).
+- Adds **Backup now** and **Backup now (incremental)** button entities to
+  trigger either kind on demand, plus a `esphome_backup.backup_now` service
+  (always a full backup) for use in automations.
 
 ## Installation
 
@@ -62,12 +62,16 @@ A Home Assistant custom integration that periodically backs up your
 
 ## Manual backup
 
-- Press the **Backup now** button entity (created automatically under the
-  ESPHome Backup device), or
-- call the service `esphome_backup.backup_now` (e.g. from Developer Tools →
-  Services, or an automation)
+Under the **ESPHome Backup** device, two button entities are available:
 
-either way, this triggers a backup + prune immediately, outside the schedule.
+- **Backup now** — an immediate full backup.
+- **Backup now (incremental)** — an immediate incremental backup (hardlinks
+  unchanged files; falls back to a full copy if there's no previous backup
+  or hardlinking isn't possible, same as a scheduled incremental run).
+
+The `esphome_backup.backup_now` service (e.g. from Developer Tools →
+Services, or an automation) is also available and always does a full
+backup. Any of these run + prune immediately, outside the schedule.
 
 ## Notes
 

@@ -41,6 +41,9 @@
     "button": {
       "backup_now": {
         "name": "Backup now"
+      },
+      "backup_now_incremental": {
+        "name": "Backup now (incremental)"
       }
     }
   }
