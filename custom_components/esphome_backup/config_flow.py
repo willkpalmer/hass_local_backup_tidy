@@ -97,7 +97,7 @@ class EsphomeBackupConfigFlow(ConfigFlow, domain=DOMAIN):
             except _InvalidInput as err:
                 errors["base"] = err.error_key
             else:
-                return self.async_create_entry(title="ESPHome Backup", data=data)
+                return self.async_create_entry(title="WP ESPHome Backup", data=data)
 
         return self.async_show_form(
             step_id="user", data_schema=_schema({}), errors=errors

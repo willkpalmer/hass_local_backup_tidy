@@ -1,6 +1,6 @@
-# ESPHome Backup
+# WP ESPHome Backup
 
-<img src="icon.png" alt="ESPHome Backup icon" width="128" height="128">
+<img src="icon.png" alt="WP ESPHome Backup icon" width="128" height="128">
 
 A Home Assistant custom integration that periodically backs up your
 `config/esphome` directory into timestamped folders under
@@ -34,7 +34,7 @@ A Home Assistant custom integration that periodically backs up your
 1. In HACS, go to **Integrations → ⋮ → Custom repositories**.
 2. Add `https://github.com/willkpalmer/hass_esphomebackup` as category
    **Integration**.
-3. Install **ESPHome Backup**, then restart Home Assistant.
+3. Install **WP ESPHome Backup**, then restart Home Assistant.
 
 ### Manual
 
@@ -45,7 +45,7 @@ A Home Assistant custom integration that periodically backs up your
 ## Configuration
 
 1. Go to **Settings → Devices & Services → Add Integration**, search for
-   **ESPHome Backup**.
+   **WP ESPHome Backup**.
 2. Set:
    - **Full backup times** — one or more 24h `HH:MM` times, comma-separated
      (e.g. `02:00` or `02:00,14:00`). A full backup runs at each listed
@@ -62,7 +62,7 @@ A Home Assistant custom integration that periodically backs up your
 
 ## Manual backup
 
-Under the **ESPHome Backup** device, two button entities are available:
+Under the **WP ESPHome Backup** device, two button entities are available:
 
 - **Backup now** — an immediate full backup.
 - **Backup now (incremental)** — an immediate incremental backup (hardlinks

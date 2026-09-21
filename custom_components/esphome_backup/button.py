@@ -58,7 +58,7 @@ class EsphomeBackupButton(ButtonEntity):
         self._attr_unique_id = f"{entry.entry_id}_{unique_id_suffix}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="ESPHome Backup",
+            name="WP ESPHome Backup",
             entry_type=DeviceEntryType.SERVICE,
         )
 

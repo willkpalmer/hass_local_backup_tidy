@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "ESPHome Backup",
+        "title": "WP ESPHome Backup",
         "description": "Configure when to back up the esphome config directory and how many backups to retain.",
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
@@ -17,13 +17,13 @@
       "overlapping_times": "Full backup times and incremental backup times can't share the same time."
     },
     "abort": {
-      "already_configured": "ESPHome Backup is already configured."
+      "already_configured": "WP ESPHome Backup is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "ESPHome Backup Options",
+        "title": "WP ESPHome Backup Options",
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
           "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
