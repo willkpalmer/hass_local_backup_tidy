@@ -91,6 +91,15 @@ backup. Any of these run + prune immediately, outside the schedule.
 This repo uses semantic versioning in `manifest.json`; each GitHub release
 tag matches the manifest version so HACS can detect and offer updates.
 
+Releases are created automatically by the
+[Release workflow](.github/workflows/release.yml): on every push to the
+default branch it reads `version` from
+`custom_components/esphome_backup/manifest.json` and, if there's no
+matching `v<version>` release yet, creates one with auto-generated notes.
+So to ship an update, bump `version` and push - pushes that don't change
+the version do nothing. The workflow can also be run by hand from the
+**Actions** tab.
+
 ## Icon
 
 `icon.png` / `icon@2x.png` at the repo root are a skeuomorphic mark combining
