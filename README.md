@@ -10,6 +10,10 @@ A Home Assistant custom integration that periodically backs up your
 
 - On each configured run, copies `config/esphome` to
   `config/esphome_backup/yyyy-mm-dd_hhmmss`.
+- Each backup also includes a `00-HAOS-YAML` subfolder holding copies of
+  every YAML file (`*.yaml` / `*.yml`) in the root of `config/` — e.g.
+  `configuration.yaml`, `automations.yaml`, `secrets.yaml`. Subfolders of
+  `config/` aren't included.
 - Supports two kinds of scheduled run, each with its own list of times:
   - **Full** — a plain, independent copy of every file.
   - **Incremental** — a copy where any file identical to the one in the
@@ -78,7 +82,8 @@ backup. Any of these run + prune immediately, outside the schedule.
 - If `config/esphome` doesn't exist at run time, that run is skipped and a
   warning is logged — nothing is deleted.
 - Backups are plain directories (not archives), so they're easy to inspect
-  or restore by copying a folder back to `esphome` — this holds for
+  or restore by copying a folder back to `esphome` (leaving out the
+  `00-HAOS-YAML` subfolder, whose files belong in `config/`) — this holds for
   incremental backups too, since hardlinked files are indistinguishable
   from copies when read or restored.
 - If the very first backup ever created is an incremental one (nothing to
