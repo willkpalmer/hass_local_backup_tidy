@@ -12,7 +12,8 @@ DEFAULT_RETAIN = 7
 
 ESPHOME_DIR_NAME = "esphome"
 BACKUP_DIR_NAME = "esphome_backup"
-BACKUP_TIMESTAMP_FORMAT = "%Y-%m-%d_%H%M%S"
+BACKUP_DAY_FORMAT = "%Y-%m-%d"
+BACKUP_TIME_FORMAT = "%H%M"
 HA_YAML_DIR_NAME = "00-HAOS-YAML"
 YAML_SUFFIXES = (".yaml", ".yml")
 

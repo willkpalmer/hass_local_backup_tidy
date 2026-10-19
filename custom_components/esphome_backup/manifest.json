@@ -7,5 +7,5 @@
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/willkpalmer/hass_esphomebackup/issues",
   "requirements": [],
-  "version": "0.7.0"
+  "version": "0.8.0"
 }

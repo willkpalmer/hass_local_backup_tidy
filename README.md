@@ -3,13 +3,15 @@
 <img src="icon.png" alt="WP ESPHome Backup icon" width="128" height="128">
 
 A Home Assistant custom integration that periodically backs up your
-`config/esphome` directory into timestamped folders under
+`config/esphome` directory into dated folders under
 `config/esphome_backup/`, with configurable schedule and retention.
 
 ## What it does
 
 - On each configured run, copies `config/esphome` to
-  `config/esphome_backup/yyyy-mm-dd_hhmmss`.
+  `config/esphome_backup/yyyy-mm-dd/hhmm` — one folder per day, holding one
+  subfolder per backup taken that day, named with its time. If two backups
+  land in the same minute, the later one gets a suffix (e.g. `1430_2`).
 - Each backup also includes a `00-HAOS-YAML` subfolder holding copies of
   every YAML file (`*.yaml` / `*.yml`) in the root of `config/` — e.g.
   `configuration.yaml`, `automations.yaml`, `secrets.yaml`. Subfolders of
@@ -25,7 +27,8 @@ A Home Assistant custom integration that periodically backs up your
     backup referencing it is gone.
 - After creating a backup (full or incremental), deletes the oldest backups
   in `config/esphome_backup/` until only the configured number remain — full
-  and incremental backups share one combined retention count.
+  and incremental backups share one combined retention count. A day folder
+  is removed once its last backup has been pruned.
 - Fully configured through the Home Assistant UI (no YAML).
 - Adds **Backup now** and **Backup now (incremental)** button entities to
   trigger either kind on demand, plus a `esphome_backup.backup_now` service
@@ -57,9 +60,9 @@ A Home Assistant custom integration that periodically backs up your
    - **Incremental backup times** — same format, optional. An incremental
      backup runs at each of these times; leave blank to disable incremental
      backups entirely. A time can't appear in both lists.
-   - **Number of backups to retain** — how many timestamped folders under
-     `config/esphome_backup/` to keep, counting full and incremental backups
-     together. Once a new backup is written, the oldest are deleted until
+   - **Number of backups to retain** — how many backups (the `hhmm`
+     folders, across all days) under `config/esphome_backup/` to keep,
+     counting full and incremental backups together. Once a new backup is written, the oldest are deleted until
      the count is back at this number.
 3. Options can be changed later from the integration's **Configure** button;
    the schedule reloads automatically.
@@ -79,6 +82,11 @@ backup. Any of these run + prune immediately, outside the schedule.
 
 ## Notes
 
+- Backups made before 0.8.0 used flat `config/esphome_backup/yyyy-mm-dd_hhmmss`
+  folders. These are left in place, still count towards retention, and are
+  pruned as normal as newer backups replace them.
+- Only folders named in the backup layout are touched when pruning; anything
+  else you put in `config/esphome_backup/` is left alone.
 - If `config/esphome` doesn't exist at run time, that run is skipped and a
   warning is logged — nothing is deleted.
 - Backups are plain directories (not archives), so they're easy to inspect
