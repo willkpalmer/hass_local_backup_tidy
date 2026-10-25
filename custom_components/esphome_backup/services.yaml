@@ -1,5 +1,0 @@
-backup_now:
-  name: Backup now
-  description: >-
-    Immediately create a full backup of the esphome config directory and
-    prune old backups down to the configured retention count.

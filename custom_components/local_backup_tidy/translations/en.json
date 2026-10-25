@@ -2,8 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "WP ESPHome Backup",
-        "description": "Configure when to back up the esphome config directory and how many backups to retain.",
+        "title": "WP Local Backup & Tidy",
+        "description": "Configure when to back up the esphome config directory (plus the YAML files in the root of the config directory) and how many backups to retain.",
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
           "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
@@ -17,13 +17,13 @@
       "overlapping_times": "Full backup times and incremental backup times can't share the same time."
     },
     "abort": {
-      "already_configured": "WP ESPHome Backup is already configured."
+      "already_configured": "WP Local Backup & Tidy is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "WP ESPHome Backup Options",
+        "title": "WP Local Backup & Tidy Options",
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
           "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",

@@ -1,4 +1,4 @@
-"""Backup logic for the ESPHome Backup integration."""
+"""Backup logic for the WP Local Backup & Tidy integration."""
 from __future__ import annotations
 
 import filecmp
@@ -17,6 +17,7 @@ from .const import (
     BACKUP_TIME_FORMAT,
     ESPHOME_DIR_NAME,
     HA_YAML_DIR_NAME,
+    LEGACY_BACKUP_DIR_NAME,
     YAML_SUFFIXES,
 )
 
@@ -36,7 +37,7 @@ class EsphomeDirNotFound(Exception):
 
 
 async def async_do_backup(hass: HomeAssistant, retain: int, incremental: bool = False) -> Path:
-    """Create a new esphome backup and prune old ones, off the event loop."""
+    """Create a new backup and prune old ones, off the event loop."""
     config_dir = Path(hass.config.path())
     return await hass.async_add_executor_job(
         _do_backup_sync, config_dir, retain, incremental
@@ -49,6 +50,7 @@ def _do_backup_sync(config_dir: Path, retain: int, incremental: bool) -> Path:
         raise EsphomeDirNotFound(f"No esphome directory found at {esphome_dir}")
 
     backup_root = config_dir / BACKUP_DIR_NAME
+    _migrate_legacy_backup_root(config_dir / LEGACY_BACKUP_DIR_NAME, backup_root)
     backup_root.mkdir(parents=True, exist_ok=True)
 
     previous_backups = _list_backups(backup_root)
@@ -70,6 +72,13 @@ def _do_backup_sync(config_dir: Path, retain: int, incremental: bool) -> Path:
     _prune_sync(backup_root, retain)
 
     return dest
+
+
+def _migrate_legacy_backup_root(legacy_root: Path, backup_root: Path) -> None:
+    """Move backups from the pre-rename folder, the first time we run after it."""
+    if legacy_root.is_dir() and not backup_root.exists():
+        _LOGGER.info("Moving existing backups from %s to %s", legacy_root, backup_root)
+        legacy_root.rename(backup_root)
 
 
 def _copy_or_link_tree(src_dir: Path, dest_dir: Path, prev_dir: Path) -> None:

@@ -1,15 +1,19 @@
-# WP ESPHome Backup
+# WP Local Backup & Tidy
 
-<img src="icon.png" alt="WP ESPHome Backup icon" width="128" height="128">
+<img src="icon.png" alt="WP Local Backup &amp; Tidy icon" width="128" height="128">
 
 A Home Assistant custom integration that periodically backs up your
-`config/esphome` directory into dated folders under
-`config/esphome_backup/`, with configurable schedule and retention.
+`config/esphome` directory and the YAML files in the root of `config/` into
+dated folders under `config/local_backup_tidy/`, and tidies away old backups
+according to a configurable retention count.
+
+Formerly **WP ESPHome Backup** — see
+[Upgrading from WP ESPHome Backup](#upgrading-from-wp-esphome-backup).
 
 ## What it does
 
 - On each configured run, copies `config/esphome` to
-  `config/esphome_backup/yyyy-mm-dd/hhmm` — one folder per day, holding one
+  `config/local_backup_tidy/yyyy-mm-dd/hhmm` — one folder per day, holding one
   subfolder per backup taken that day, named with its time. If two backups
   land in the same minute, the later one gets a suffix (e.g. `1430_2`).
 - Each backup also includes a `00-HAOS-YAML` subfolder holding copies of
@@ -26,12 +30,12 @@ A Home Assistant custom integration that periodically backs up your
     folder just drops its links, and a file's data isn't freed until every
     backup referencing it is gone.
 - After creating a backup (full or incremental), deletes the oldest backups
-  in `config/esphome_backup/` until only the configured number remain — full
+  in `config/local_backup_tidy/` until only the configured number remain — full
   and incremental backups share one combined retention count. A day folder
   is removed once its last backup has been pruned.
 - Fully configured through the Home Assistant UI (no YAML).
 - Adds **Backup now** and **Backup now (incremental)** button entities to
-  trigger either kind on demand, plus a `esphome_backup.backup_now` service
+  trigger either kind on demand, plus a `local_backup_tidy.backup_now` service
   (always a full backup) for use in automations.
 
 ## Installation
@@ -39,20 +43,20 @@ A Home Assistant custom integration that periodically backs up your
 ### Via HACS (custom repository)
 
 1. In HACS, go to **Integrations → ⋮ → Custom repositories**.
-2. Add `https://github.com/willkpalmer/hass_esphomebackup` as category
+2. Add `https://github.com/willkpalmer/hass_local_backup_tidy` as category
    **Integration**.
-3. Install **WP ESPHome Backup**, then restart Home Assistant.
+3. Install **WP Local Backup & Tidy**, then restart Home Assistant.
 
 ### Manual
 
-1. Copy `custom_components/esphome_backup` into your Home Assistant
+1. Copy `custom_components/local_backup_tidy` into your Home Assistant
    `config/custom_components/` directory.
 2. Restart Home Assistant.
 
 ## Configuration
 
 1. Go to **Settings → Devices & Services → Add Integration**, search for
-   **WP ESPHome Backup**.
+   **WP Local Backup & Tidy**.
 2. Set:
    - **Full backup times** — one or more 24h `HH:MM` times, comma-separated
      (e.g. `02:00` or `02:00,14:00`). A full backup runs at each listed
@@ -61,32 +65,50 @@ A Home Assistant custom integration that periodically backs up your
      backup runs at each of these times; leave blank to disable incremental
      backups entirely. A time can't appear in both lists.
    - **Number of backups to retain** — how many backups (the `hhmm`
-     folders, across all days) under `config/esphome_backup/` to keep,
+     folders, across all days) under `config/local_backup_tidy/` to keep,
      counting full and incremental backups together. Once a new backup is written, the oldest are deleted until
      the count is back at this number.
 3. Options can be changed later from the integration's **Configure** button;
    the schedule reloads automatically.
 
+## Upgrading from WP ESPHome Backup
+
+Version 0.9.0 renamed the integration from **WP ESPHome Backup**
+(`esphome_backup`) to **WP Local Backup & Tidy** (`local_backup_tidy`).
+Home Assistant treats that as a different integration, so after updating:
+
+1. Restart Home Assistant, then go to **Settings → Devices & Services**,
+   delete the old **WP ESPHome Backup** entry and add **WP Local Backup &
+   Tidy**, re-entering your times and retention.
+2. If the old `config/custom_components/esphome_backup` folder is still
+   there, delete it and restart again.
+3. Update any automations or scripts that call `esphome_backup.backup_now`
+   or use the old button entities, to the new service and buttons.
+
+Existing backups aren't lost: on its first run, the integration moves
+`config/esphome_backup/` to `config/local_backup_tidy/` (as long as the new
+folder doesn't exist yet) and carries on pruning them as normal.
+
 ## Manual backup
 
-Under the **WP ESPHome Backup** device, two button entities are available:
+Under the **WP Local Backup & Tidy** device, two button entities are available:
 
 - **Backup now** — an immediate full backup.
 - **Backup now (incremental)** — an immediate incremental backup (hardlinks
   unchanged files; falls back to a full copy if there's no previous backup
   or hardlinking isn't possible, same as a scheduled incremental run).
 
-The `esphome_backup.backup_now` service (e.g. from Developer Tools →
+The `local_backup_tidy.backup_now` service (e.g. from Developer Tools →
 Services, or an automation) is also available and always does a full
 backup. Any of these run + prune immediately, outside the schedule.
 
 ## Notes
 
-- Backups made before 0.8.0 used flat `config/esphome_backup/yyyy-mm-dd_hhmmss`
+- Backups made before 0.8.0 used flat `config/local_backup_tidy/yyyy-mm-dd_hhmmss`
   folders. These are left in place, still count towards retention, and are
   pruned as normal as newer backups replace them.
 - Only folders named in the backup layout are touched when pruning; anything
-  else you put in `config/esphome_backup/` is left alone.
+  else you put in `config/local_backup_tidy/` is left alone.
 - If `config/esphome` doesn't exist at run time, that run is skipped and a
   warning is logged — nothing is deleted.
 - Backups are plain directories (not archives), so they're easy to inspect
@@ -107,7 +129,7 @@ tag matches the manifest version so HACS can detect and offer updates.
 Releases are created automatically by the
 [Release workflow](.github/workflows/release.yml): on every push to the
 default branch it reads `version` from
-`custom_components/esphome_backup/manifest.json` and, if there's no
+`custom_components/local_backup_tidy/manifest.json` and, if there's no
 matching `v<version>` release yet, creates one with auto-generated notes.
 So to ship an update, bump `version` and push - pushes that don't change
 the version do nothing. The workflow can also be run by hand from the
@@ -120,7 +142,7 @@ an ESPHome-style chip with a classic backup floppy disk; HACS displays this
 in the store listing for the custom repository.
 
 The same images are duplicated under
-`custom_components/esphome_backup/brand/` so Home Assistant (2026.3+) shows
+`custom_components/local_backup_tidy/brand/` so Home Assistant (2026.3+) shows
 them natively on **Settings → Devices & Services** too, without needing a
 PR to [home-assistant/brands](https://github.com/home-assistant/brands) —
 local brand images take priority over that repository automatically. On

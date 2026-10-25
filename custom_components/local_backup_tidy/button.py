@@ -1,4 +1,4 @@
-"""Button platform for the ESPHome Backup integration."""
+"""Button platform for the WP Local Backup & Tidy integration."""
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
@@ -16,7 +16,7 @@ async def async_setup_entry(
     """Set up the backup-now buttons for a config entry."""
     async_add_entities(
         [
-            EsphomeBackupButton(
+            LocalBackupTidyButton(
                 hass,
                 entry,
                 data_key="run_backup",
@@ -24,7 +24,7 @@ async def async_setup_entry(
                 translation_key="backup_now",
                 icon="mdi:backup-restore",
             ),
-            EsphomeBackupButton(
+            LocalBackupTidyButton(
                 hass,
                 entry,
                 data_key="run_incremental_backup",
@@ -36,8 +36,8 @@ async def async_setup_entry(
     )
 
 
-class EsphomeBackupButton(ButtonEntity):
-    """Button that triggers an immediate ESPHome backup (full or incremental)."""
+class LocalBackupTidyButton(ButtonEntity):
+    """Button that triggers an immediate backup (full or incremental)."""
 
     _attr_has_entity_name = True
 
@@ -58,7 +58,7 @@ class EsphomeBackupButton(ButtonEntity):
         self._attr_unique_id = f"{entry.entry_id}_{unique_id_suffix}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="WP ESPHome Backup",
+            name="WP Local Backup & Tidy",
             entry_type=DeviceEntryType.SERVICE,
         )
 

@@ -284,13 +284,13 @@ def main():
     out_512 = img.resize((512, 512), Image.LANCZOS)
     out_256 = img.resize((256, 256), Image.LANCZOS)
 
-    brand_dir = "../custom_components/esphome_backup/brand"
+    brand_dir = "../custom_components/local_backup_tidy/brand"
     os.makedirs(brand_dir, exist_ok=True)
     for path in ("../icon.png", f"{brand_dir}/icon.png"):
         out_256.save(path)
     for path in ("../icon@2x.png", f"{brand_dir}/icon@2x.png"):
         out_512.save(path)
-    print("saved icon.png / icon@2x.png to repo root and custom_components/esphome_backup/brand/")
+    print("saved icon.png / icon@2x.png to repo root and custom_components/local_backup_tidy/brand/")
 
 
 if __name__ == "__main__":

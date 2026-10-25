@@ -28,7 +28,7 @@ jobs:
       - name: Read manifest version
         id: version
         run: |
-          manifest=custom_components/esphome_backup/manifest.json
+          manifest=custom_components/local_backup_tidy/manifest.json
           version=$(jq -r .version "$manifest")
           if [ -z "$version" ] || [ "$version" = "null" ]; then
             echo "::error::No version found in $manifest"

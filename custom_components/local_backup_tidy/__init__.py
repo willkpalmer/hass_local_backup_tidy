@@ -1,4 +1,4 @@
-"""The ESPHome Backup integration."""
+"""The WP Local Backup & Tidy integration."""
 from __future__ import annotations
 
 import logging
@@ -27,7 +27,7 @@ PLATFORMS: list[Platform] = [Platform.BUTTON]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up ESPHome Backup from a config entry."""
+    """Set up WP Local Backup & Tidy from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     def _make_run_backup(incremental: bool):
@@ -37,10 +37,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             try:
                 dest = await async_do_backup(hass, retain, incremental=incremental)
             except EsphomeDirNotFound as err:
-                _LOGGER.warning("ESPHome backup skipped: %s", err)
+                _LOGGER.warning("Backup skipped: %s", err)
                 return
             kind = "incremental" if incremental else "full"
-            _LOGGER.info("Created %s ESPHome backup at %s", kind, dest)
+            _LOGGER.info("Created %s backup at %s", kind, dest)
 
         return _run_backup
 

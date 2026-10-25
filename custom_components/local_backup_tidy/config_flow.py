@@ -1,4 +1,4 @@
-"""Config flow for the ESPHome Backup integration."""
+"""Config flow for the WP Local Backup & Tidy integration."""
 from __future__ import annotations
 
 from typing import Any
@@ -78,8 +78,8 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-class EsphomeBackupConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for ESPHome Backup."""
+class LocalBackupTidyConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for WP Local Backup & Tidy."""
 
     VERSION = 1
 
@@ -97,7 +97,7 @@ class EsphomeBackupConfigFlow(ConfigFlow, domain=DOMAIN):
             except _InvalidInput as err:
                 errors["base"] = err.error_key
             else:
-                return self.async_create_entry(title="WP ESPHome Backup", data=data)
+                return self.async_create_entry(title="WP Local Backup & Tidy", data=data)
 
         return self.async_show_form(
             step_id="user", data_schema=_schema({}), errors=errors
@@ -107,11 +107,11 @@ class EsphomeBackupConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return EsphomeBackupOptionsFlow(config_entry)
+        return LocalBackupTidyOptionsFlow(config_entry)
 
 
-class EsphomeBackupOptionsFlow(OptionsFlow):
-    """Handle options (reconfiguration) for ESPHome Backup."""
+class LocalBackupTidyOptionsFlow(OptionsFlow):
+    """Handle options (reconfiguration) for WP Local Backup & Tidy."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         self._config_entry = config_entry
