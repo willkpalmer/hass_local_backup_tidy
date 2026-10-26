@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
@@ -20,12 +21,20 @@ _LOGGER = logging.getLogger(__name__)
 _BAK_FILE_RE = re.compile(r"\.bak-(\d{4})-(\d{2})-(\d{2})-.+$")
 
 
-async def async_do_tidy(hass: HomeAssistant, delete_all: bool = False) -> list[Path]:
+@dataclass
+class TidyResult:
+    """What a tidy-up run deleted, and what it tried to but couldn't."""
+
+    deleted: list[Path] = field(default_factory=list)
+    failed: list[Path] = field(default_factory=list)
+
+
+async def async_do_tidy(hass: HomeAssistant, delete_all: bool = False) -> TidyResult:
     """Delete matching .bak files under the config dir, off the event loop.
 
     By default only files whose embedded date is more than TIDY_MIN_AGE_DAYS
     days before today are deleted; with delete_all, every matching file is.
-    Returns the deleted paths.
+    Returns the deleted (and undeletable) paths.
     """
     config_dir = Path(hass.config.path())
     return await hass.async_add_executor_job(
@@ -33,10 +42,10 @@ async def async_do_tidy(hass: HomeAssistant, delete_all: bool = False) -> list[P
     )
 
 
-def _do_tidy_sync(config_dir: Path, today: date, delete_all: bool) -> list[Path]:
+def _do_tidy_sync(config_dir: Path, today: date, delete_all: bool) -> TidyResult:
     # Our own backups are snapshots, so .bak files inside them stay as-is.
     skip_dirs = {config_dir / BACKUP_DIR_NAME, config_dir / LEGACY_BACKUP_DIR_NAME}
-    deleted: list[Path] = []
+    result = TidyResult()
 
     for root, dirs, files in os.walk(config_dir):
         root_path = Path(root)
@@ -54,11 +63,12 @@ def _do_tidy_sync(config_dir: Path, today: date, delete_all: bool) -> list[Path]
                 path.unlink()
             except OSError as err:
                 _LOGGER.warning("Couldn't delete %s: %s", path, err)
+                result.failed.append(path)
                 continue
             _LOGGER.debug("Deleted %s", path)
-            deleted.append(path)
+            result.deleted.append(path)
 
-    return deleted
+    return result
 
 
 def _is_old_enough(match: re.Match[str], today: date) -> bool:

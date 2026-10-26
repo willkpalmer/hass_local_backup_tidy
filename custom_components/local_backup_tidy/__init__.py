@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
+from pathlib import Path
 
+from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -20,11 +23,15 @@ from .const import (
     DEFAULT_TIMES,
     DOMAIN,
     SERVICE_BACKUP_NOW,
+    TIDY_MIN_AGE_DAYS,
 )
-from .tidy import async_do_tidy
+from .tidy import TidyResult, async_do_tidy
 from .util import parse_times
 
 _LOGGER = logging.getLogger(__name__)
+
+# How many deleted/failed paths a notification lists before summarising.
+_NOTIFY_MAX_PATHS = 20
 
 PLATFORMS: list[Platform] = [Platform.BUTTON]
 
@@ -51,10 +58,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     run_incremental_backup = _make_run_backup(incremental=True)
 
     def _make_run_tidy(delete_all: bool):
-        async def _run_tidy(_now=None) -> None:
-            deleted = await async_do_tidy(hass, delete_all=delete_all)
+        async def _run_tidy(_now=None, notify: bool = False) -> None:
+            result = await async_do_tidy(hass, delete_all=delete_all)
             kind = "all" if delete_all else "old"
-            _LOGGER.info("Tidy up deleted %d %s .bak file(s)", len(deleted), kind)
+            _LOGGER.info("Tidy up deleted %d %s .bak file(s)", len(result.deleted), kind)
+            if notify:
+                _notify_tidy_result(hass, result, delete_all)
 
         return _run_tidy
 
@@ -80,12 +89,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # The backup_now service always does a full backup, for predictability;
     # the button platform exposes both full and incremental separately.
+    # Tidy-ups started from a button report back with a notification;
+    # scheduled ones only log.
     hass.data[DOMAIN][entry.entry_id] = {
         "unsubs": unsubs,
         "run_backup": run_full_backup,
         "run_incremental_backup": run_incremental_backup,
-        "run_tidy": run_tidy,
-        "run_delete_all_bak": run_delete_all_bak,
+        "run_tidy": partial(run_tidy, notify=True),
+        "run_delete_all_bak": partial(run_delete_all_bak, notify=True),
     }
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -101,6 +112,41 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
+
+
+def _notify_tidy_result(hass: HomeAssistant, result: TidyResult, delete_all: bool) -> None:
+    """Show a persistent notification summarising a button-triggered tidy-up."""
+    config_dir = Path(hass.config.path())
+
+    def _list(paths: list[Path]) -> str:
+        lines = [f"- `{p.relative_to(config_dir)}`" for p in paths[:_NOTIFY_MAX_PATHS]]
+        if len(paths) > _NOTIFY_MAX_PATHS:
+            lines.append(f"- …and {len(paths) - _NOTIFY_MAX_PATHS} more")
+        return "\n".join(lines)
+
+    count = len(result.deleted)
+    message = f"Removed {count} .bak {'file' if count == 1 else 'files'}"
+    if delete_all:
+        title = "Delete all .bak files complete"
+        message += "."
+    else:
+        title = "Tidy up complete"
+        days = "day" if TIDY_MIN_AGE_DAYS == 1 else "days"
+        message += f" dated more than {TIDY_MIN_AGE_DAYS} {days} ago."
+    if result.deleted:
+        message += "\n\n" + _list(result.deleted)
+    if result.failed:
+        message += (
+            f"\n\n{len(result.failed)} file(s) couldn't be deleted (see the log):\n\n"
+            + _list(result.failed)
+        )
+
+    persistent_notification.async_create(
+        hass,
+        message,
+        title=title,
+        notification_id=f"{DOMAIN}_{'delete_all_bak' if delete_all else 'tidy'}",
+    )
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

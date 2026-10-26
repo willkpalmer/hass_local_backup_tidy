@@ -128,7 +128,13 @@ Two buttons under the **WP Local Backup & Tidy** device run it:
 - **Delete all .bak files** — deletes **every** matching file, whatever its
   date. This can't be scheduled; it only runs when you press the button.
 
-The number of files deleted is logged at info level each run.
+When either button is pressed, a Home Assistant notification (the bell in
+the sidebar) confirms the run has finished, says how many files were
+removed and lists them (the first 20, then a count of the rest). Any files
+that couldn't be deleted, e.g. because of permissions, are listed
+separately. Pressing the same button again replaces its previous
+notification. Scheduled tidy-ups don't notify; every run, scheduled or not,
+logs the number of files deleted at info level.
 
 ## Notes
 
