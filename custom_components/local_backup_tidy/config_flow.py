@@ -16,9 +16,11 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_INCREMENTAL_TIMES,
     CONF_RETAIN,
+    CONF_TIDY_TIMES,
     CONF_TIMES,
     DEFAULT_INCREMENTAL_TIMES,
     DEFAULT_RETAIN,
+    DEFAULT_TIDY_TIMES,
     DEFAULT_TIMES,
     DOMAIN,
 )
@@ -50,6 +52,10 @@ def _schema(defaults: dict[str, Any]) -> vol.Schema:
             ): NumberSelector(
                 NumberSelectorConfig(min=1, max=365, step=1, mode=NumberSelectorMode.BOX)
             ),
+            vol.Optional(
+                CONF_TIDY_TIMES,
+                default=defaults.get(CONF_TIDY_TIMES, ",".join(DEFAULT_TIDY_TIMES)),
+            ): TextSelector(),
         }
     )
 
@@ -71,10 +77,16 @@ def _validate_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
     if set(parse_times(times)) & set(parse_times(incremental_times)):
         raise _InvalidInput("overlapping_times")
 
+    try:
+        tidy_times = validate_optional_times(user_input.get(CONF_TIDY_TIMES, ""))
+    except ValueError as err:
+        raise _InvalidInput("invalid_tidy_times") from err
+
     return {
         CONF_TIMES: times,
         CONF_INCREMENTAL_TIMES: incremental_times,
         CONF_RETAIN: int(user_input[CONF_RETAIN]),
+        CONF_TIDY_TIMES: tidy_times,
     }
 
 

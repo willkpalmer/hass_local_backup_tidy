@@ -3,18 +3,20 @@
     "step": {
       "user": {
         "title": "WP Local Backup & Tidy",
-        "description": "Configure when to back up the esphome config directory (plus the YAML files in the root of the config directory) and how many backups to retain.",
+        "description": "Configure when to back up the esphome config directory (plus the YAML files in the root of the config directory), how many backups to retain, and when to tidy up old .bak files.",
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
           "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
-          "retain": "Number of backups to retain (full and incremental combined)"
+          "retain": "Number of backups to retain (full and incremental combined)",
+          "tidy_times": "Tidy-up times (comma-separated 24h HH:MM; optional, leave blank to disable). Deletes files named like *.bak-YYYY-MM-DD-* anywhere in the config directory (except the backups folder) whose date is more than 1 day ago."
         }
       }
     },
     "error": {
       "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00).",
       "invalid_incremental_times": "Enter valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00), or leave blank.",
-      "overlapping_times": "Full backup times and incremental backup times can't share the same time."
+      "overlapping_times": "Full backup times and incremental backup times can't share the same time.",
+      "invalid_tidy_times": "Enter valid 24h tidy-up times as HH:MM, separated by commas (e.g. 03:00), or leave blank."
     },
     "abort": {
       "already_configured": "WP Local Backup & Tidy is already configured."
@@ -27,14 +29,16 @@
         "data": {
           "times": "Full backup times (comma-separated 24h HH:MM, one per run per day)",
           "incremental_times": "Incremental backup times (comma-separated 24h HH:MM; optional, leave blank to disable). Unchanged files are hardlinked to the previous backup instead of copied, to save disk space.",
-          "retain": "Number of backups to retain (full and incremental combined)"
+          "retain": "Number of backups to retain (full and incremental combined)",
+          "tidy_times": "Tidy-up times (comma-separated 24h HH:MM; optional, leave blank to disable). Deletes files named like *.bak-YYYY-MM-DD-* anywhere in the config directory (except the backups folder) whose date is more than 1 day ago."
         }
       }
     },
     "error": {
       "invalid_times": "Enter one or more valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00).",
       "invalid_incremental_times": "Enter valid 24h times as HH:MM, separated by commas (e.g. 02:00,14:00), or leave blank.",
-      "overlapping_times": "Full backup times and incremental backup times can't share the same time."
+      "overlapping_times": "Full backup times and incremental backup times can't share the same time.",
+      "invalid_tidy_times": "Enter valid 24h tidy-up times as HH:MM, separated by commas (e.g. 03:00), or leave blank."
     }
   },
   "entity": {
@@ -44,6 +48,12 @@
       },
       "backup_now_incremental": {
         "name": "Backup now (incremental)"
+      },
+      "tidy_now": {
+        "name": "Tidy up now"
+      },
+      "delete_all_bak": {
+        "name": "Delete all .bak files"
       }
     }
   }

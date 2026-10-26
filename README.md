@@ -33,9 +33,13 @@ Formerly **WP ESPHome Backup** — see
   in `config/local_backup_tidy/` until only the configured number remain — full
   and incremental backups share one combined retention count. A day folder
   is removed once its last backup has been pruned.
+- Optionally **tidies up** stray backup files left around `config/` — any
+  file whose name contains `.bak-YYYY-MM-DD-` followed by more text (e.g.
+  `configuration.yaml.bak-2026-10-24-120000`) and whose date is more than
+  1 day before the day of the run. See [Tidy up](#tidy-up).
 - Fully configured through the Home Assistant UI (no YAML).
-- Adds **Backup now** and **Backup now (incremental)** button entities to
-  trigger either kind on demand, plus a `local_backup_tidy.backup_now` service
+- Adds **Backup now**, **Backup now (incremental)**, **Tidy up now** and
+  **Delete all .bak files** button entities, plus a `local_backup_tidy.backup_now` service
   (always a full backup) for use in automations.
 
 ## Installation
@@ -66,8 +70,11 @@ Formerly **WP ESPHome Backup** — see
      backups entirely. A time can't appear in both lists.
    - **Number of backups to retain** — how many backups (the `hhmm`
      folders, across all days) under `config/local_backup_tidy/` to keep,
-     counting full and incremental backups together. Once a new backup is written, the oldest are deleted until
-     the count is back at this number.
+     counting full and incremental backups together. Once a new backup is
+     written, the oldest are deleted until the count is back at this number.
+   - **Tidy-up times** — same format, optional. A [tidy up](#tidy-up) runs
+     at each of these times; leave blank to disable scheduled tidy-ups. These
+     may share times with backups.
 3. Options can be changed later from the integration's **Configure** button;
    the schedule reloads automatically.
 
@@ -91,7 +98,8 @@ folder doesn't exist yet) and carries on pruning them as normal.
 
 ## Manual backup
 
-Under the **WP Local Backup & Tidy** device, two button entities are available:
+Under the **WP Local Backup & Tidy** device, two backup button entities are
+available:
 
 - **Backup now** — an immediate full backup.
 - **Backup now (incremental)** — an immediate incremental backup (hardlinks
@@ -101,6 +109,26 @@ Under the **WP Local Backup & Tidy** device, two button entities are available:
 The `local_backup_tidy.backup_now` service (e.g. from Developer Tools →
 Services, or an automation) is also available and always does a full
 backup. Any of these run + prune immediately, outside the schedule.
+
+## Tidy up
+
+A tidy up looks through the whole `config/` directory, including
+subfolders, for files whose name contains `.bak-YYYY-MM-DD-` followed by at
+least one more character, and deletes them. The integration's own backups
+folder (`config/local_backup_tidy/`) is skipped, so the snapshots stay
+exactly as they were taken.
+
+Two buttons under the **WP Local Backup & Tidy** device run it:
+
+- **Tidy up now** — deletes only files whose `YYYY-MM-DD` is more than 1 day
+  before today, i.e. on the 26th, files dated the 24th or earlier go and
+  files dated the 25th or 26th stay. Files whose date isn't a real date
+  (e.g. `2026-13-40`) are left alone. Scheduled tidy-ups (the **Tidy-up
+  times** option) do exactly the same.
+- **Delete all .bak files** — deletes **every** matching file, whatever its
+  date. This can't be scheduled; it only runs when you press the button.
+
+The number of files deleted is logged at info level each run.
 
 ## Notes
 

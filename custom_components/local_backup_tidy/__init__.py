@@ -12,13 +12,16 @@ from .backup import EsphomeDirNotFound, async_do_backup
 from .const import (
     CONF_INCREMENTAL_TIMES,
     CONF_RETAIN,
+    CONF_TIDY_TIMES,
     CONF_TIMES,
     DEFAULT_INCREMENTAL_TIMES,
     DEFAULT_RETAIN,
+    DEFAULT_TIDY_TIMES,
     DEFAULT_TIMES,
     DOMAIN,
     SERVICE_BACKUP_NOW,
 )
+from .tidy import async_do_tidy
 from .util import parse_times
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,16 +50,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     run_full_backup = _make_run_backup(incremental=False)
     run_incremental_backup = _make_run_backup(incremental=True)
 
+    def _make_run_tidy(delete_all: bool):
+        async def _run_tidy(_now=None) -> None:
+            deleted = await async_do_tidy(hass, delete_all=delete_all)
+            kind = "all" if delete_all else "old"
+            _LOGGER.info("Tidy up deleted %d %s .bak file(s)", len(deleted), kind)
+
+        return _run_tidy
+
+    run_tidy = _make_run_tidy(delete_all=False)
+    # Deliberately never scheduled - only the button runs it.
+    run_delete_all_bak = _make_run_tidy(delete_all=True)
+
     options = {**entry.data, **entry.options}
     times = parse_times(options.get(CONF_TIMES, ",".join(DEFAULT_TIMES)))
     incremental_times = parse_times(
         options.get(CONF_INCREMENTAL_TIMES, ",".join(DEFAULT_INCREMENTAL_TIMES))
     )
+    tidy_times = parse_times(options.get(CONF_TIDY_TIMES, ",".join(DEFAULT_TIDY_TIMES)))
 
     unsubs = []
     for time_str, handler in [(t, run_full_backup) for t in times] + [
         (t, run_incremental_backup) for t in incremental_times
-    ]:
+    ] + [(t, run_tidy) for t in tidy_times]:
         hour, minute = (int(part) for part in time_str.split(":"))
         unsubs.append(
             async_track_time_change(hass, handler, hour=hour, minute=minute, second=0)
@@ -68,6 +84,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "unsubs": unsubs,
         "run_backup": run_full_backup,
         "run_incremental_backup": run_incremental_backup,
+        "run_tidy": run_tidy,
+        "run_delete_all_bak": run_delete_all_bak,
     }
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))

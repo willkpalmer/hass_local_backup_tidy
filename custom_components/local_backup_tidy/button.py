@@ -13,7 +13,7 @@ from .const import DOMAIN
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the backup-now buttons for a config entry."""
+    """Set up the backup and tidy buttons for a config entry."""
     async_add_entities(
         [
             LocalBackupTidyButton(
@@ -32,12 +32,28 @@ async def async_setup_entry(
                 translation_key="backup_now_incremental",
                 icon="mdi:content-save-plus-outline",
             ),
+            LocalBackupTidyButton(
+                hass,
+                entry,
+                data_key="run_tidy",
+                unique_id_suffix="tidy_now",
+                translation_key="tidy_now",
+                icon="mdi:broom",
+            ),
+            LocalBackupTidyButton(
+                hass,
+                entry,
+                data_key="run_delete_all_bak",
+                unique_id_suffix="delete_all_bak",
+                translation_key="delete_all_bak",
+                icon="mdi:delete-sweep",
+            ),
         ]
     )
 
 
 class LocalBackupTidyButton(ButtonEntity):
-    """Button that triggers an immediate backup (full or incremental)."""
+    """Button that immediately runs a backup or tidy-up job."""
 
     _attr_has_entity_name = True
 
@@ -63,6 +79,6 @@ class LocalBackupTidyButton(ButtonEntity):
         )
 
     async def async_press(self) -> None:
-        """Trigger a backup + prune immediately."""
+        """Run the job immediately."""
         entry_data = self._hass.data[DOMAIN][self._entry.entry_id]
         await entry_data[self._data_key]()
